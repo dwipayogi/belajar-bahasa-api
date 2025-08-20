@@ -1,0 +1,71 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum Language {
+  Indonesia
+  English
+}
+
+enum Title {
+  Quiz
+  Color
+  Family
+  Number
+}
+
+enum Type {
+  Choice
+  Drag_n_Drop @map("Drag n Drop")
+  Fill
+  Guess
+  Listening
+}
+
+model User {
+  id           String    @id @default(uuid())
+  username     String
+  password     String?
+  totalTrue    Int       @default(0) @map("totalTrue")
+  totalFalse   Int       @default(0) @map("totalFalse")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  lastActivity DateTime? @map("last_activity")
+
+  // Relations
+  questionAnswers QuestionAnswer[]
+
+  @@map("users")
+  @@index([username])
+  @@index([createdAt])
+  @@index([lastActivity])
+}
+
+model QuestionAnswer {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  session       Int
+  language      Language
+  questionTitle Title     @map("questionTitle")
+  questionType  Type      @map("questionType")
+  number        Int
+  answer        Boolean
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("questionAnswer")
+  @@index([userId])
+  @@index([userId, session])
+  @@index([session])
+  @@index([language])
+  @@index([questionType])
+}
