@@ -121,6 +121,7 @@ Semua endpoint diawali dengan `/api`
     ```
 
 - **POST /api/users/login**
+
   - Deskripsi: Login user dengan username dan password
   - Body JSON:
     ```json
@@ -153,6 +154,35 @@ Semua endpoint diawali dengan `/api`
     ```json
     { "error": "User not found" }
     ```
+
+- **PUT /api/users/:id**
+
+  - Deskripsi: Update fields totalTrue, totalFalse, dan lastActivity untuk user tertentu (semua field opsional; kirim hanya field yang ingin diubah).
+  - Body JSON (contoh):
+    ```json
+    {
+      "totalTrue": 5,
+      "totalFalse": 2,
+      "lastActivity": "2025-08-21T12:34:56.000Z"
+    }
+    ```
+  - Response 200:
+    ```json
+    {
+      "success": true,
+      "message": "User updated successfully",
+      "data": {
+        "id": "uuid-string",
+        "username": "string",
+        "createdAt": "datetime"
+      }
+    }
+    ```
+  - Response 404:
+    ```json
+    { "error": "User not found" }
+    ```
+  - Catatan: lastActivity diharapkan berupa string datetime ISO. Jika hanya sebagian field dikirim, hanya field tersebut yang akan diubah.
 
 ### Question Answer
 
@@ -190,68 +220,6 @@ Semua endpoint diawali dengan `/api`
     }
     ```
 
-- **GET /api/answer**
-
-  - Deskripsi: Ambil semua jawaban
-  - Response 200:
-    ```json
-    { "success": true, "data": [QuestionAnswer] }
-    ```
-  - Response 404:
-    ```json
-    { "success": false, "error": "No question answers found" }
-    ```
-
-- **GET /api/answer/language/:language**
-
-  - Deskripsi: Ambil jawaban berdasarkan bahasa (Indonesia/English)
-  - Response 200:
-    ```json
-    { "success": true, "data": [QuestionAnswer] }
-    ```
-  - Response 404:
-    ```json
-    {
-      "success": false,
-      "error": "No question answers found for language: {language}"
-    }
-    ```
-
-- **GET /api/answer/user/:userId**
-
-  - Deskripsi: Ambil jawaban berdasarkan user id (UUID)
-  - Response 200:
-    ```json
-    { "success": true, "data": [QuestionAnswer] }
-    ```
-  - Response 404:
-    ```json
-    { "success": false, "error": "No question answers found for this user" }
-    ```
-
-- **GET /api/answer/:id**
-
-  - Deskripsi: Ambil jawaban berdasarkan id (UUID)
-  - Response 200:
-    ```json
-    { "success": true, "data": QuestionAnswer }
-    ```
-  - Response 404:
-    ```json
-    { "success": false, "error": "Question answer not found" }
-    ```
-
-- **GET /api/answer/session/:session**
-  - Deskripsi: Ambil jawaban berdasarkan session
-  - Response 200:
-    ```json
-    { "success": true, "data": [QuestionAnswer] }
-    ```
-  - Response 404:
-    ```json
-    { "success": false, "error": "No question answers found for this session" }
-    ```
-
 ## Contoh curl
 
 ### Buat user:
@@ -282,12 +250,6 @@ curl -X POST http://localhost:3000/api/answer \
 
 ```bash
 curl -X GET http://localhost:3000/api/users
-```
-
-### Ambil jawaban berdasarkan bahasa:
-
-```bash
-curl -X GET http://localhost:3000/api/answer/language/English
 ```
 
 ## Model singkat (Prisma)

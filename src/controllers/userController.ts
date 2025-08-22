@@ -88,7 +88,21 @@ export const getUser = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+      where: {
+        questionAnswers: {
+          some: {},
+        },
+      },
+      select: {
+        id: true,
+        username: true,
+        totalTrue: true,
+        totalFalse: true,
+        createdAt: true,
+        lastActivity: true,
+      },
+    });
 
     res.status(200).json({
       success: true,
@@ -147,6 +161,98 @@ export const loginUser = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Login user error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      totalTrue,
+      totalFalse,
+      lastActivity,
+    }: {
+      totalTrue?: number;
+      totalFalse?: number;
+      lastActivity?: Date;
+    } = req.body;
+
+    // Find user by ID
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: id },
+      data: {
+        totalTrue: totalTrue !== undefined ? totalTrue : user.totalTrue,
+        totalFalse: totalFalse !== undefined ? totalFalse : user.totalFalse,
+        lastActivity:
+          lastActivity !== undefined ? lastActivity : user.lastActivity,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        createdAt: updatedUser.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("Update user error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+};
+
+export const getUserAnswers = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    // Get all answers for the user
+    const userAnswers = await prisma.questionAnswer.findMany({
+      where: { userId: id },
+      orderBy: [{ language: "asc" }, { questionType: "asc" }, { questionTitle: "asc" }, { number: "asc" }],
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        userId: id,
+        username: user.username,
+        totalAnswers: userAnswers.length,
+        answers: userAnswers,
+      },
+    });
+  } catch (error) {
+    console.error("Get user answers error:", error);
     res.status(500).json({
       success: false,
       error: "Internal server error",
