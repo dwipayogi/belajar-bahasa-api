@@ -17,6 +17,7 @@ enum Language {
 
 enum Title {
   Quiz
+  Latihan
   Color
   Family
   Number
