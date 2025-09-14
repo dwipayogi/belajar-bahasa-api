@@ -4,28 +4,36 @@ import prisma from "../client.ts";
 
 export const createAnswer = async (req: Request, res: Response) => {
   try {
-    const { userId, session, language, title, type, material, number, answer } = req.body;
+    const { answers } = req.body;
 
-    const newQuestionAnswer = await prisma.questionAnswer.create({
-      data: {
-        userId,
-        session,
-        language: language as Language,
-        questionTitle: title as Title,
-        questionType: type as Type,
-        questionMat: material as Material,
-        number,
-        answer,
-      },
+    if (!Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Payload must include non-empty 'answers' array",
+      });
+    }
+
+    const newQuestionAnswers = await prisma.questionAnswer.createMany({
+      data: answers.map((a) => ({
+        userId: a.userId,
+        session: a.session,
+        language: a.language as Language,
+        questionTitle: a.title as Title,
+        questionType: a.type as Type,
+        questionMat: a.material as Material,
+        number: a.number,
+        answer: a.answer,
+      })),
+      skipDuplicates: true,
     });
 
     res.status(201).json({
       success: true,
-      message: "Question answer created successfully",
-      data: newQuestionAnswer,
+      message: "Question answers created successfully",
+      count: newQuestionAnswers.count,
     });
   } catch (error) {
-    console.error("Error creating question answer:", error);
+    console.error("Error creating question answers:", error);
     res.status(500).json({
       success: false,
       error: "Something went wrong!",
