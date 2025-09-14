@@ -18,9 +18,16 @@ enum Language {
 enum Title {
   Quiz
   Latihan
+}
+
+enum Material {
   Color
   Family
   Number
+  Ajakan
+  Perintah
+  Tanya
+  AktifPasif
 }
 
 enum Type {
@@ -56,6 +63,7 @@ model QuestionAnswer {
   language      Language
   questionTitle Title     @map("questionTitle")
   questionType  Type      @map("questionType")
+  questionMat   Material  @map("questionMat")
   number        Int
   answer        Boolean
   createdAt     DateTime  @default(now()) @map("created_at")

@@ -1,326 +1,405 @@
 # Belajar Bahasa API
 
-Ringkasan singkat proyek API untuk menyimpan jawaban latihan bahasa.
+API backend untuk aplikasi pembelajaran bahasa yang memungkinkan pengguna untuk mengikuti quiz dan latihan dalam bahasa Indonesia dan Inggris.
 
-## Ringkasan
+## 🚀 Fitur
 
-API ini menyediakan endpoint untuk mengelola user dan menyimpan/men-query jawaban latihan (QuestionAnswer). Dibangun dengan Express + TypeScript dan Prisma (PostgreSQL).
+- ✅ Manajemen pengguna (registrasi, login, profil)
+- ✅ Sistem quiz dan latihan multi-bahasa
+- ✅ Tracking jawaban dan statistik pengguna
+- ✅ Support multiple material pembelajaran (Color, Family, Number, dll)
+- ✅ Multiple jenis soal (Choice, Drag & Drop, Fill, Guess, Listening)
+- ✅ Database PostgreSQL dengan Prisma ORM
+- ✅ Error handling yang komprehensif
 
-## Setup
+## 🛠️ Teknologi
 
-1. Pastikan Node.js dan PostgreSQL terinstall.
-2. Clone repo dan masuk ke direktori proyek.
-3. Install dependensi:
-
-   ```bash
-   npm install
-   ```
-
-4. Siapkan environment variable di file `.env` (contoh di bawah).
-5. Generate Prisma client dan jalankan migrasi (jika ada):
-
-   ```bash
-   npx prisma generate
-   npx prisma migrate dev --name init
-   ```
-
-6. Jalankan server:
-
-   ```bash
-   npm run dev
-   ```
-
-## Environment variables
-
-- `DATABASE_URL`: connection string PostgreSQL
-- `PORT` (opsional): port server (default: 3000)
-
-Contoh file `.env`:
-
-```env
-DATABASE_URL="postgresql://username:password@localhost:5432/belajarbahasa"
-PORT=3000
-```
-
-## Base URL
-
-Untuk development: `http://localhost:3000`  
-Semua endpoint diawali dengan `/api`
-
-## Endpoints
-
-### Users
-
-- **GET /api/users**
-
-  - Deskripsi: Ambil semua user
-  - Response 200:
-    ```json
-    {
-      "success": true,
-      "data": [
-        {
-          "id": "uuid-string",
-          "username": "string",
-          "totalTrue": 0,
-          "totalFalse": 0,
-          "createdAt": "datetime",
-          "lastActivity": "datetime|null"
-        }
-      ]
-    }
-    ```
-
-- **GET /api/users/:id**
-
-  - Deskripsi: Ambil user berdasarkan id (UUID)
-  - Response 200:
-    ```json
-    {
-      "success": true,
-      "data": {
-        "id": "uuid-string",
-        "username": "string",
-        "totalTrue": 0,
-        "totalFalse": 0,
-        "createdAt": "datetime",
-        "lastActivity": "datetime|null"
-      }
-    }
-    ```
-  - Response 404:
-    ```json
-    { "success": false, "error": "User not found" }
-    ```
-
-- **POST /api/users**
-
-  - Deskripsi: Buat user baru (password opsional)
-  - Body JSON:
-    ```json
-    {
-      "username": "string",
-      "password": "string (opsional)"
-    }
-    ```
-  - Response 201:
-    ```json
-    {
-      "success": true,
-      "message": "User created successfully",
-      "data": {
-        "id": "uuid-string",
-        "username": "string",
-        "createdAt": "datetime"
-      }
-    }
-    ```
-  - Response 400:
-    ```json
-    { "error": "Username is required" }
-    ```
-
-- **POST /api/users/login**
-
-  - Deskripsi: Login user dengan username dan password
-  - Body JSON:
-    ```json
-    {
-      "username": "string",
-      "password": "string"
-    }
-    ```
-  - Response 200:
-    ```json
-    {
-      "success": true,
-      "message": "Login successful",
-      "data": {
-        "id": "uuid-string",
-        "username": "string",
-        "createdAt": "datetime"
-      }
-    }
-    ```
-  - Response 400:
-    ```json
-    { "error": "Username and password are required" }
-    ```
-  - Response 401:
-    ```json
-    { "error": "Invalid password" }
-    ```
-  - Response 404:
-    ```json
-    { "error": "User not found" }
-    ```
-
-- **PUT /api/users/:id**
-
-  - Deskripsi: Update fields totalTrue, totalFalse, dan lastActivity untuk user tertentu (semua field opsional; kirim hanya field yang ingin diubah).
-  - Body JSON (contoh):
-    ```json
-    {
-      "totalTrue": 5,
-      "totalFalse": 2,
-      "lastActivity": "2025-08-21T12:34:56.000Z"
-    }
-    ```
-  - Response 200:
-    ```json
-    {
-      "success": true,
-      "message": "User updated successfully",
-      "data": {
-        "id": "uuid-string",
-        "username": "string",
-        "createdAt": "datetime"
-      }
-    }
-    ```
-  - Response 404:
-    ```json
-    { "error": "User not found" }
-    ```
-  - Catatan: lastActivity diharapkan berupa string datetime ISO. Jika hanya sebagian field dikirim, hanya field tersebut yang akan diubah.
-
-### Question Answer
-
-- **POST /api/answer**
-
-  - Deskripsi: Simpan jawaban pertanyaan
-  - Body JSON:
-    ```json
-    {
-      "userId": "uuid-string",
-      "session": 1,
-      "language": "Indonesia | English",
-      "title": "Quiz | Color | Family | Number",
-      "type": "Choice | Drag_n_Drop | Fill | Guess | Listening",
-      "number": 1,
-      "answer": true
-    }
-    ```
-  - Response 201:
-    ```json
-    {
-      "success": true,
-      "message": "Question answer created successfully",
-      "data": {
-        "id": "uuid-string",
-        "userId": "uuid-string",
-        "session": 1,
-        "language": "English",
-        "questionTitle": "Quiz",
-        "questionType": "Choice",
-        "number": 1,
-        "answer": true,
-        "createdAt": "datetime"
-      }
-    }
-    ```
-
-## Contoh curl
-
-### Buat user:
-
-```bash
-curl -X POST http://localhost:3000/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"username":"alice","password":"secret"}'
-```
-
-### Login:
-
-```bash
-curl -X POST http://localhost:3000/api/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"alice","password":"secret"}'
-```
-
-### Simpan jawaban:
-
-```bash
-curl -X POST http://localhost:3000/api/answer \
-  -H "Content-Type: application/json" \
-  -d '{"userId":"uuid-dari-user","session":1,"language":"English","title":"Quiz","type":"Choice","number":1,"answer":true}'
-```
-
-### Ambil semua user:
-
-```bash
-curl -X GET http://localhost:3000/api/users
-```
-
-## Model singkat (Prisma)
-
-### User
-
-- `id`: String (UUID)
-- `username`: String
-- `password`: String? (tersimpan hashed bila disediakan)
-- `totalTrue`: Int (default: 0)
-- `totalFalse`: Int (default: 0)
-- `createdAt`: DateTime
-- `lastActivity`: DateTime?
-
-### QuestionAnswer
-
-- `id`: String (UUID)
-- `userId`: String (UUID, foreign key ke User)
-- `session`: Int
-- `language`: enum (Indonesia, English)
-- `questionTitle`: enum (Quiz, Color, Family, Number)
-- `questionType`: enum (Choice, Drag_n_Drop, Fill, Guess, Listening)
-- `number`: Int
-- `answer`: Boolean
-- `createdAt`: DateTime
-
-### Enum Values
-
-- **Language**: `Indonesia`, `English`
-- **Title**: `Quiz`, `Color`, `Family`, `Number`
-- **Type**: `Choice`, `Drag_n_Drop`, `Fill`, `Guess`, `Listening`
-
-> **Catatan**: Untuk type "Drag n Drop" gunakan `Drag_n_Drop` dalam request body.
-
-## Error handling
-
-- API mengembalikan status 4xx untuk kesalahan klien (bad request, not found, unauthorized) dan 500 untuk error server.
-- Response format untuk error:
-  ```json
-  { "success": false, "error": "message" }
-  ```
-  atau
-  ```json
-  { "error": "message" }
-  ```
-
-### Status Codes Umum
-
-- `200`: OK - Request berhasil
-- `201`: Created - Resource berhasil dibuat
-- `400`: Bad Request - Request tidak valid
-- `401`: Unauthorized - Autentikasi gagal
-- `404`: Not Found - Resource tidak ditemukan
-- `413`: Payload Too Large - Request body terlalu besar
-- `500`: Internal Server Error - Error server
-
-## Catatan Pengembangan
-
-- Password di-hash menggunakan bcrypt saat disimpan bila diberikan.
-- ID menggunakan UUID string, bukan integer.
-- Pastikan field enum sesuai string yang didefinisikan pada Prisma schema saat melakukan request.
-- Server mendukung CORS untuk cross-origin requests.
-- Request body memiliki limit 10MB.
-- Untuk type "Drag n Drop", gunakan `Drag_n_Drop` (dengan underscore).
-
-## Tech Stack
-
-- **Runtime**: Node.js dengan ts-node-dev untuk development
+- **Runtime**: Node.js dengan TypeScript
 - **Framework**: Express.js
-- **Language**: TypeScript
 - **Database**: PostgreSQL
 - **ORM**: Prisma
-- **Security**: bcrypt untuk hashing password
-- **CORS**: Enabled untuk cross-origin requests
+- **Authentication**: bcrypt untuk hashing password
+- **CORS**: Untuk cross-origin requests
+- **Package Manager**: Bun
+
+## 📦 Instalasi
+
+### Prasyarat
+
+- Node.js (v18+ disarankan)
+- PostgreSQL
+- Bun (package manager)
+
+### Langkah Instalasi
+
+1. **Clone repository**
+
+   ```bash
+   git clone https://github.com/dwipayogi/belajar-bahasa-api.git
+   cd belajar-bahasa-api
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   bun install
+   ```
+
+3. **Setup environment variables**
+
+   Buat file `.env` di root directory:
+
+   ```env
+   DATABASE_URL="postgresql://username:password@localhost:5432/belajar_bahasa_db"
+   PORT=3000
+   ```
+
+4. **Setup database**
+
+   ```bash
+   # Generate Prisma client
+   bunx prisma generate
+
+   # Run migrations
+   bunx prisma migrate dev --name init
+   ```
+
+5. **Jalankan aplikasi**
+
+   **Development mode:**
+
+   ```bash
+   bun run dev
+   ```
+
+   **Production mode:**
+
+   ```bash
+   bun run build
+   bun run start
+   ```
+
+Server akan berjalan di `http://localhost:3000`
+
+## 📊 Database Schema
+
+### User Model
+
+```prisma
+model User {
+  id           String    @id @default(uuid())
+  username     String
+  password     String?   // Optional untuk student accounts
+  totalTrue    Int       @default(0)
+  totalFalse   Int       @default(0)
+  createdAt    DateTime  @default(now())
+  lastActivity DateTime?
+
+  questionAnswers QuestionAnswer[]
+}
+```
+
+### QuestionAnswer Model
+
+```prisma
+model QuestionAnswer {
+  id            String    @id @default(uuid())
+  userId        String
+  session       Int
+  language      Language  // Indonesia | English
+  questionTitle Title     // Quiz | Latihan
+  questionType  Type      // Choice | Drag_n_Drop | Fill | Guess | Listening
+  questionMat   Material  // Color | Family | Number | Ajakan | Perintah | Tanya | AktifPasif
+  number        Int
+  answer        Boolean
+  createdAt     DateTime  @default(now())
+}
+```
+
+## 🔗 API Endpoints
+
+### Base URL
+
+```
+http://localhost:3000/api
+```
+
+### User Endpoints
+
+| Method | Endpoint                    | Deskripsi                                            |
+| ------ | --------------------------- | ---------------------------------------------------- |
+| `GET`  | `/users`                    | Mendapatkan semua pengguna yang pernah menjawab soal |
+| `GET`  | `/users/:id`                | Mendapatkan detail pengguna berdasarkan ID           |
+| `GET`  | `/users/:id/answers`        | Mendapatkan semua jawaban pengguna                   |
+| `GET`  | `/users/language/:language` | Mendapatkan pengguna berdasarkan bahasa              |
+| `POST` | `/users`                    | Membuat pengguna baru                                |
+| `POST` | `/users/login`              | Login pengguna                                       |
+| `PUT`  | `/users/:id`                | Update statistik pengguna                            |
+
+### Question Answer Endpoints
+
+| Method | Endpoint            | Deskripsi                              |
+| ------ | ------------------- | -------------------------------------- |
+| `POST` | `/answer`           | Menyimpan jawaban soal                 |
+| `GET`  | `/answer/:language` | Mendapatkan jawaban berdasarkan bahasa |
+
+## 📝 Contoh Penggunaan API
+
+### 1. Membuat Pengguna Baru
+
+**Request:**
+
+```http
+POST /api/users
+Content-Type: application/json
+
+{
+  "username": "student123",
+  "password": "password123"  // Optional
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "User created successfully",
+  "data": {
+    "id": "uuid-here",
+    "username": "student123",
+    "createdAt": "2024-01-01T12:00:00.000Z"
+  }
+}
+```
+
+### 2. Login Pengguna
+
+**Request:**
+
+```http
+POST /api/users/login
+Content-Type: application/json
+
+{
+  "username": "student123",
+  "password": "password123"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "id": "uuid-here",
+    "username": "student123",
+    "createdAt": "2024-01-01T12:00:00.000Z"
+  }
+}
+```
+
+### 3. Menyimpan Jawaban Soal
+
+**Request:**
+
+```http
+POST /api/answer
+Content-Type: application/json
+
+{
+  "userId": "uuid-here",
+  "session": 1,
+  "language": "Indonesia",
+  "title": "Quiz",
+  "type": "Choice",
+  "material": "Color",
+  "number": 1,
+  "answer": true
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Question answer created successfully",
+  "data": {
+    "id": "uuid-here",
+    "userId": "uuid-here",
+    "session": 1,
+    "language": "Indonesia",
+    "questionTitle": "Quiz",
+    "questionType": "Choice",
+    "questionMat": "Color",
+    "number": 1,
+    "answer": true,
+    "createdAt": "2024-01-01T12:00:00.000Z"
+  }
+}
+```
+
+### 4. Mendapatkan Detail Pengguna
+
+**Request:**
+
+```http
+GET /api/users/uuid-here
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid-here",
+    "username": "student123",
+    "totalTrue": 15,
+    "totalFalse": 5,
+    "createdAt": "2024-01-01T12:00:00.000Z",
+    "lastActivity": "2024-01-02T12:00:00.000Z"
+  }
+}
+```
+
+### 5. Update Statistik Pengguna
+
+**Request:**
+
+```http
+PUT /api/users/uuid-here
+Content-Type: application/json
+
+{
+  "totalTrue": 20,
+  "totalFalse": 5,
+  "lastActivity": "2024-01-02T15:30:00.000Z"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "User updated successfully",
+  "data": {
+    "id": "uuid-here",
+    "username": "student123",
+    "createdAt": "2024-01-01T12:00:00.000Z"
+  }
+}
+```
+
+## 📋 Enum Values
+
+### Language
+
+- `Indonesia`
+- `English`
+
+### Title
+
+- `Quiz`
+- `Latihan`
+
+### Type
+
+- `Choice`
+- `Drag_n_Drop`
+- `Fill`
+- `Guess`
+- `Listening`
+
+### Material
+
+- `Color`
+- `Family`
+- `Number`
+- `Ajakan`
+- `Perintah`
+- `Tanya`
+- `AktifPasif`
+
+## ⚠️ Error Handling
+
+API mengembalikan response error dalam format standar:
+
+```json
+{
+  "success": false,
+  "error": "Error message here"
+}
+```
+
+### Status Codes
+
+- `200` - Success
+- `201` - Created
+- `400` - Bad Request (validation error, invalid JSON, etc.)
+- `401` - Unauthorized (invalid password)
+- `404` - Not Found (user/resource not found)
+- `413` - Request Entity Too Large
+- `500` - Internal Server Error
+
+## 🔧 Development
+
+### Project Structure
+
+```
+belajarbahasa-API/
+├── prisma/
+│   ├── schema.prisma          # Database schema
+│   └── migrations/            # Database migrations
+├── src/
+│   ├── controllers/           # Route handlers
+│   │   ├── userController.ts
+│   │   └── questionAnswerController.ts
+│   ├── routes/               # Route definitions
+│   │   ├── userRoutes.ts
+│   │   └── questionAnswerRoutes.ts
+│   └── client.ts             # Prisma client
+├── index.ts                  # Main application file
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+### Menjalankan Migrasi Database
+
+```bash
+# Membuat migration baru
+bunx prisma migrate dev --name "migration_name"
+
+# Reset database (development only!)
+bunx prisma migrate reset
+
+# Melihat status migration
+bunx prisma migrate status
+```
+
+### Prisma Studio
+
+```bash
+bunx prisma studio
+```
+
+## 🤝 Contributing
+
+1. Fork repository
+2. Buat feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
+5. Buat Pull Request
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+## 📞 Contact
+
+Project Link: [https://github.com/dwipayogi/belajar-bahasa-api](https://github.com/dwipayogi/belajar-bahasa-api)

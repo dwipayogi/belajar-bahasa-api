@@ -239,7 +239,11 @@ export const getUserAnswers = async (req: Request, res: Response) => {
     // Get all answers for the user
     const userAnswers = await prisma.questionAnswer.findMany({
       where: { userId: id },
-      orderBy: [{ language: "asc" }, { questionType: "asc" }, { questionTitle: "asc" }, { number: "asc" }],
+      orderBy: [
+        { language: "asc" },
+        { questionMat: "asc" },
+        { createdAt: "asc" },
+      ],
     });
 
     res.status(200).json({
@@ -253,6 +257,61 @@ export const getUserAnswers = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Get user answers error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+};
+
+export const getUserbyLanguage = async (req: Request, res: Response) => {
+  try {
+    const { language } = req.params;
+
+    // Get all users who have answered questions in the specified language
+    const users = await prisma.user.findMany({
+      where: {
+        questionAnswers: {
+          some: {
+            language: language as any,
+          },
+        },
+      },
+      include: {
+        questionAnswers: {
+          where: {
+            language: language as any,
+          },
+        },
+      },
+    });
+
+    // Build users array with same structure as getAllUsers
+    const usersWithStats = users.map((user) => {
+      const languageAnswers = user.questionAnswers ?? [];
+      const correctAnswers = languageAnswers.filter(
+        (answer) => answer.answer === true
+      ).length;
+      const incorrectAnswers = languageAnswers.filter(
+        (answer) => answer.answer === false
+      ).length;
+
+      return {
+        id: user.id,
+        username: user.username,
+        totalTrue: correctAnswers,
+        totalFalse: incorrectAnswers,
+        createdAt: user.createdAt,
+        lastActivity: user.lastActivity,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: usersWithStats,
+    });
+  } catch (error) {
+    console.error("Get users by language error:", error);
     res.status(500).json({
       success: false,
       error: "Internal server error",
