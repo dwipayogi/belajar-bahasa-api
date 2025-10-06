@@ -13,7 +13,7 @@ const router = Router();
 
 router.get("/", getAllUsers);
 router.get("/:id", getUser);
-router.get("/:id/answers", getUserAnswers);
+router.get("/:id/answers/:language", getUserAnswers);
 router.post("/login", loginUser);
 router.post("/", createUser);
 router.put("/:id", updateUser);

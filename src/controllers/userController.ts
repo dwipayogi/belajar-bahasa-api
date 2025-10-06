@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../client.ts";
 import bcrypt from "bcrypt";
+import { Language } from "@prisma/client";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
@@ -222,7 +223,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const getUserAnswers = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id, language } = req.params;
 
     // Check if user exists
     const user = await prisma.user.findUnique({
@@ -238,7 +239,7 @@ export const getUserAnswers = async (req: Request, res: Response) => {
 
     // Get all answers for the user
     const userAnswers = await prisma.questionAnswer.findMany({
-      where: { userId: id },
+      where: { userId: id, language: language as Language },
       orderBy: [
         { language: "asc" },
         { questionMat: "asc" },
