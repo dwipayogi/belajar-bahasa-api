@@ -1,6 +1,11 @@
 {
   "name": "belajarbahasa-api",
   "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "prisma generate",
+    "start": "node dist/index.js"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/bcrypt": "^5.0.2",
