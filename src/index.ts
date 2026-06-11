@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import userRoutes from "./routes/userRoutes.ts";
-import questionAnswerRoutes from "./routes/questionAnswerRoutes.ts";
+import userRoutes from "./routes/userRoutes.js";
+import questionAnswerRoutes from "./routes/questionAnswerRoutes.js";
 
 dotenv.config();
 

@@ -7,7 +7,7 @@ import {
   updateUser,
   getUserAnswers,
   getUserbyLanguage
-} from "../controllers/userController.ts";
+} from "../controllers/userController.js";
 
 const router = Router();
 

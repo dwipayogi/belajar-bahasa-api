@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Language, Material, Title, Type } from "@prisma/client";
-import prisma from "../client.ts";
+import prisma from "../client.js";
 
 export const createAnswer = async (req: Request, res: Response) => {
   try {

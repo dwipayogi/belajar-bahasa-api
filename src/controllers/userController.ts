@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import prisma from "../client.ts";
+import prisma from "../client.js";
 import bcrypt from "bcrypt";
 import { Language } from "@prisma/client";
 
